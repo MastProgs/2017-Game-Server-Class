@@ -144,7 +144,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_PAINT:
         {
-		int circle_range_size{ 50 };	// player 반지름
+		int circle_range_size{ 30 };	// player 반지름
 
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
@@ -155,6 +155,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				g_map.player.get_pos().y * circle_range_size,
 				g_map.player.get_pos().x * circle_range_size + circle_range_size,
 				g_map.player.get_pos().y * circle_range_size + circle_range_size);
+
+			// map 그리기
+			int draw_for_x = 0;
+			int draw_for_y = 0;
+			for (int i = 0; i < MAX_MAP_SIZE; ++i)
+			{
+				draw_for_y += circle_range_size;
+				for (int j = 0; j < MAX_MAP_SIZE; ++j) {
+					draw_for_x += circle_range_size;
+					MoveToEx(hdc, draw_for_x - circle_range_size, draw_for_y, NULL);
+					LineTo(hdc, draw_for_x, draw_for_y);
+					MoveToEx(hdc, draw_for_x, draw_for_y, NULL);
+					LineTo(hdc, draw_for_x, draw_for_y - circle_range_size);
+				}
+				draw_for_x = 0;
+			}
 
             EndPaint(hWnd, &ps);
         }

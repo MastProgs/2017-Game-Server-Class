@@ -22,6 +22,4 @@
 #include<iostream>
 using namespace std;
 
-#define MAX_MAP_SIZE 8
-
 #include"worldmap.h"

@@ -1,6 +1,8 @@
 #pragma once
 #include"stdafx.h"
 
+#define MAX_MAP_SIZE 8
+
 using position = struct Position
 {
 	int x{ 0 };
