@@ -2,8 +2,6 @@
 
 // 전역 변수:
 HINSTANCE g_hInst;
-HWND server_start_button, server_shutdown_button, debug_on_button, debug_off_button;
-RECT debug_rect = { 20, 80, 350, 748 };
 
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -52,6 +50,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	static HWND server_start_button, server_shutdown_button, debug_on_button, debug_off_button;
+	static RECT debug_rect = { 20, 80, 350, 748 }, state_rect = { 370, 80, 1004, 714 };
+	static time_t present_time;
+	static HANDLE hTimer;
+	static wchar_t time_buf[80];
+	static char *time_str;
+
 	// SetWinowPos ( HWND, HWND, x, y, cx, cy, uFlags )
 	enum wParam_message
 	{
@@ -65,13 +70,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	// 그리기 위한 변수 - WM_PAINT
 	HDC hdc;
 	PAINTSTRUCT ps;
-
+	
     switch (message)
     {
+	case WM_TIMER: {
+		time(&present_time);
+		time_str = ctime(&present_time);
+
+		InvalidateRect(hWnd, NULL, TRUE);
+
+		break;
+	}
 	case WM_PAINT: {
 		hdc = BeginPaint(hWnd, &ps);
 		FillRect(hdc, &debug_rect, CreateSolidBrush(RGB(255, 255, 255)));
 		FrameRect(hdc, &debug_rect, CreateSolidBrush(RGB(0, 0, 0)));
+		FillRect(hdc, &state_rect, CreateSolidBrush(RGB(255, 255, 255)));
+		FrameRect(hdc, &state_rect, CreateSolidBrush(RGB(0, 0, 0)));
+
+		TextOutA(hdc, 826, 734, time_str, strlen(time_str));
 		EndPaint(hWnd, &ps);
 		break;
 	}
@@ -119,9 +136,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		ShowWindow(debug_on_button, SW_HIDE);
 		ShowWindow(debug_off_button, SW_HIDE);
 
+		// 시간 관련 변수
+		time_str = "";
+		hTimer = (HANDLE)SetTimer(hWnd, 1, 1000, NULL);
+
 		break;
 	}
 	case WM_DESTROY: {
+		KillTimer(hWnd, 1);
 		PostQuitMessage(0);
 		break;
 	}
