@@ -3,6 +3,7 @@
 // 전역 변수:
 HINSTANCE g_hInst;
 HWND server_start_button, server_shutdown_button, debug_on_button, debug_off_button;
+RECT debug_rect = { 20, 80, 350, 748 };
 
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -18,7 +19,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	WndClass.cbClsExtra = 0;
 	WndClass.cbWndExtra = 0;
-	WndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);	// 흰색 배경
+	WndClass.hbrBackground = (HBRUSH)GetStockObject(LTGRAY_BRUSH);	// 흰색 배경
 	WndClass.hCursor = LoadCursor(NULL, IDC_ARROW);					// 기본 커서
 	WndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);				// 좌상단 아이콘
 	WndClass.hInstance = hInstance;
@@ -51,6 +52,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	// SetWinowPos ( HWND, HWND, x, y, cx, cy, uFlags )
 	enum wParam_message
 	{
 		server_start = 1,
@@ -60,8 +62,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	};
 
+	// 그리기 위한 변수 - WM_PAINT
+	HDC hdc;
+	PAINTSTRUCT ps;
+
     switch (message)
     {
+	case WM_PAINT: {
+		hdc = BeginPaint(hWnd, &ps);
+		FillRect(hdc, &debug_rect, CreateSolidBrush(RGB(255, 255, 255)));
+		FrameRect(hdc, &debug_rect, CreateSolidBrush(RGB(0, 0, 0)));
+		EndPaint(hWnd, &ps);
+		break;
+	}
 	case WM_COMMAND: {
 		switch (LOWORD(wParam))
 		{
