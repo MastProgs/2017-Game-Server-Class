@@ -30,4 +30,12 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="my_profile.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="my_profile_on.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

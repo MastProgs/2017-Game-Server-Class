@@ -2,6 +2,7 @@
 
 // 전역 변수:
 HINSTANCE g_hInst;
+HBITMAP hBitmap = NULL;
 
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -30,9 +31,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	// 창 크기 고정용
 	DWORD dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU | WS_BORDER;
-	RECT window_size = { 0 , 0, 1024, 768 };
+	static RECT window_size = /*{ 0 , 0, 1024, 768 }*/{ 0,0,400,300 };
 	AdjustWindowRect(&window_size, dwStyle, FALSE);
-
 
 	hWnd = CreateWindow(WndClass.lpszClassName, WndClass.lpszClassName, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, window_size.right - window_size.left, window_size.bottom - window_size.top, nullptr, nullptr, hInstance, nullptr);
 	ShowWindow(hWnd, nCmdShow);
@@ -50,12 +50,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static HWND server_start_button, server_shutdown_button, debug_on_button, debug_off_button;
-	static RECT debug_rect = { 20, 80, 350, 748 }, state_rect = { 370, 80, 1004, 714 };
-	static time_t present_time;
-	static HANDLE hTimer;
-	static wchar_t time_buf[80];
-	static char *time_str;
+	static HWND server_start_button, server_shutdown_button, debug_on_button, debug_off_button;	
+	static bool b_console_on = false, b_server_on = false;
 
 	// SetWinowPos ( HWND, HWND, x, y, cx, cy, uFlags )
 	enum wParam_message
@@ -73,22 +69,37 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	
     switch (message)
     {
-	case WM_TIMER: {
-		time(&present_time);
-		time_str = ctime(&present_time);
-
-		InvalidateRect(hWnd, NULL, TRUE);
-
-		break;
-	}
 	case WM_PAINT: {
-		hdc = BeginPaint(hWnd, &ps);
-		FillRect(hdc, &debug_rect, CreateSolidBrush(RGB(255, 255, 255)));
-		FrameRect(hdc, &debug_rect, CreateSolidBrush(RGB(0, 0, 0)));
-		FillRect(hdc, &state_rect, CreateSolidBrush(RGB(255, 255, 255)));
-		FrameRect(hdc, &state_rect, CreateSolidBrush(RGB(0, 0, 0)));
 
-		TextOutA(hdc, 826, 734, time_str, strlen(time_str));
+		// bmp
+		if (b_server_on) {
+			hBitmap = (HBITMAP)LoadImage(g_hInst, L"my_profile_on.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		}
+		else {
+			hBitmap = (HBITMAP)LoadImage(g_hInst, L"my_profile.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		}
+
+		BITMAP          bitmap;
+		HDC             hdcMem;
+		HGDIOBJ         oldBitmap;
+
+		hdc = BeginPaint(hWnd, &ps);
+
+		// bmp
+		hdcMem = CreateCompatibleDC(hdc);
+		oldBitmap = SelectObject(hdcMem, hBitmap);
+		GetObject(hBitmap, sizeof(bitmap), &bitmap);
+		BitBlt(hdc, 210, 92, bitmap.bmWidth, bitmap.bmHeight, hdcMem, 0, 0, SRCCOPY);
+		SelectObject(hdcMem, oldBitmap);
+		DeleteDC(hdcMem);
+
+		// txt
+		SetBkMode(hdc, TRANSPARENT);
+		TextOut(hdc, 20, 0, L"Source = github . com / Uzchowall / gameserverclass", 51);
+		TextOut(hdc, 20, 225, L"Last Modified = 2017 - 03 - 23", 30);
+		TextOut(hdc, 20, 245, L"blog = khjkhj2804 . blog . me", 29);
+		TextOut(hdc, 20, 265, L"E-mail = khjkhj2804 @ naver . com", 33);
+		
 		EndPaint(hWnd, &ps);
 		break;
 	}
@@ -99,6 +110,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			ShowWindow(server_start_button, SW_HIDE);
 			ShowWindow(server_shutdown_button, SW_SHOW);
 			ShowWindow(debug_on_button, SW_SHOW);
+
+			b_server_on = true;
+			RECT rt = { 210, 90, 400, 300 };
+			InvalidateRect(hWnd, &rt, FALSE);
 			break;
 		}
 		case server_shutdown: {
@@ -106,18 +121,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			ShowWindow(server_shutdown_button, SW_HIDE);
 			ShowWindow(debug_on_button, SW_HIDE);
 			ShowWindow(debug_off_button, SW_HIDE);
+
+			b_server_on = false;
+			RECT rt = { 210, 90, 400, 300 };
+			InvalidateRect(hWnd, &rt, FALSE);
+			if (b_console_on) { FreeConsole(); }
 			break;
 		}
 		case debug_on: {
 			ShowWindow(debug_on_button, SW_HIDE);
 			ShowWindow(debug_off_button, SW_SHOW);
 
+			AllocConsole();
+			b_console_on = true;
 			break;
 		}
 		case debug_off: {
 			ShowWindow(debug_on_button, SW_SHOW);
 			ShowWindow(debug_off_button, SW_HIDE);
 
+			FreeConsole();
+			b_console_on = false;
 			break;
 		}
 		default:
@@ -134,16 +158,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		debug_on_button = CreateWindow(L"Button", L"Debug On", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 175, 20, 100, 25, hWnd, (HMENU)debug_on, g_hInst, nullptr);
 		debug_off_button = CreateWindow(L"Button", L"Debug Off", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 175, 20, 100, 25, hWnd, (HMENU)debug_off, g_hInst, nullptr);
 		ShowWindow(debug_on_button, SW_HIDE);
-		ShowWindow(debug_off_button, SW_HIDE);
-
-		// 시간 관련 변수
-		time_str = "";
-		hTimer = (HANDLE)SetTimer(hWnd, 1, 1000, NULL);
+		ShowWindow(debug_off_button, SW_HIDE);		
 
 		break;
 	}
 	case WM_DESTROY: {
+		if (b_console_on) { FreeConsole(); }
 		KillTimer(hWnd, 1);
+		DeleteObject(hBitmap);
 		PostQuitMessage(0);
 		break;
 	}
