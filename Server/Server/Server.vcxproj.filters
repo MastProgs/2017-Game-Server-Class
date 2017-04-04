@@ -16,6 +16,15 @@
     <Filter Include="소스 파일\00.WinMain Class">
       <UniqueIdentifier>{c257448c-45cb-4697-8008-63ce07d515fb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01.IOCP Class">
+      <UniqueIdentifier>{a7785a08-95fc-4f06-a8b2-5d62a0dde325}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02.Player Session">
+      <UniqueIdentifier>{dd9c9466-77f7-4478-b642-c3291aba06fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\99.Default Main">
+      <UniqueIdentifier>{acda5c9f-ae61-4b43-8a41-caf7198f022d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -25,18 +34,33 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="win_main_class.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>소스 파일\00.WinMain Class</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCP.h">
+      <Filter>소스 파일\01.IOCP Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Player_Session.h">
+      <Filter>소스 파일\02.Player Session</Filter>
+    </ClInclude>
+    <ClInclude Include="protocol.h">
+      <Filter>소스 파일\99.Default Main</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Server.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="win_main_class.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\00.WinMain Class</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCP.cpp">
+      <Filter>소스 파일\01.IOCP Class</Filter>
+    </ClCompile>
+    <ClCompile Include="Server.cpp">
+      <Filter>소스 파일\99.Default Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Player_Session.cpp">
+      <Filter>소스 파일\02.Player Session</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

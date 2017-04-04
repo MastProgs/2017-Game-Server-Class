@@ -1,11 +1,23 @@
-#pragma once
+ï»¿#pragma once
 #include "targetver.h"
 
-#define WIN32_LEAN_AND_MEAN             // °ÅÀÇ »ç¿ëµÇÁö ¾Ê´Â ³»¿ëÀº Windows Çì´õ¿¡¼­ Á¦¿ÜÇÕ´Ï´Ù.
-// Windows Çì´õ ÆÄÀÏ:
+#define WIN32_LEAN_AND_MEAN             // ê±°ì˜ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ë‚´ìš©ì€ Windows í—¤ë”ì—ì„œ ì œì™¸í•©ë‹ˆë‹¤.
+// Windows í—¤ë” íŒŒì¼:
 #include <windows.h>
-#include<time.h>
+#include <time.h>
 
-// TODO: ÇÁ·Î±×·¥¿¡ ÇÊ¿äÇÑ Ãß°¡ Çì´õ´Â ¿©±â¿¡¼­ ÂüÁ¶ÇÕ´Ï´Ù.
-#include<iostream>
+// TODO: í”„ë¡œê·¸ë¨ì— í•„ìš”í•œ ì¶”ê°€ í—¤ë”ëŠ” ì—¬ê¸°ì—ì„œ ì°¸ì¡°í•©ë‹ˆë‹¤.
+#include <mutex>
+#include <iostream>
+#include <vector>
+#include <thread>
+//#include <future>
 using namespace std;
+
+#pragma comment(lib, "ws2_32.lib")
+#include <winsock2.h>
+
+#include "protocol.h"
+#include "Player_Session.h"
+#include "IOCP.h"
+#include "win_main_class.h"
