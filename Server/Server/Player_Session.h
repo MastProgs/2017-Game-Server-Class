@@ -1,6 +1,6 @@
 #pragma once
 
-enum EVENT_TYPE { E_RECV, E_SEND };
+enum EVENT_TYPE { E_RECV, E_SEND, E_SERVER_SHUT_DOWN };
 
 using OVLP_EX = struct OVERLAP_EX
 {

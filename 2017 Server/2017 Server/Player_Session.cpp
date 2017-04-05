@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
-Player_Session::Player_Session(SOCKET s, bool connected, unsigned long long id) : m_s{ move(s) }, m_b_connected{ connected }, m_id{ id }
+Player_Session::Player_Session(SOCKET s, bool connected, unsigned long long id, vector<Player_Session*> * p) : m_s{ move(s) }, m_b_connected{ connected }, m_id{ id }, m_clients{ p }
 {
 	// initialize in here **
 
@@ -85,6 +85,16 @@ void Player_Session::process_packet()
 	switch (event_type)
 	{
 	case MOVE: {
+
+		if (m_buf.buf[2] & KEY_UP) { if (-1 != (m_pos.y - 1)) { --m_pos.y; }}
+		else if (m_buf.buf[2] & KEY_DOWN) { if (MAX_MAP_SIZE != (m_pos.y + 1)) { ++m_pos.y; }}
+		else if (m_buf.buf[2] & KEY_RIGHT) { if (MAX_MAP_SIZE != (m_pos.x + 1)) { ++m_pos.x; } }
+		else if (m_buf.buf[2] & KEY_LEFT) { if (-1 != (m_pos.x - 1)) { --m_pos.x; } }
+
+		sc_packet_move my_pos;
+		my_pos.pos = m_pos;
+
+		for (auto players : *m_clients) { send_packet(reinterpret_cast<Packet*>(&my_pos)); }
 
 		break;
 	}

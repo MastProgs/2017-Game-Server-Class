@@ -90,7 +90,8 @@ LRESULT CALLBACK win_main_class::m_WndProc(HWND hWnd, UINT message, WPARAM wPara
 
 			//me->server_init_func_call = me->m_iocp.init_server;
 			//me->future_func = async(me->server_init_func_call);
-			me->m_iocp.init_server();
+			//me->m_iocp.init_server();
+			me->th = new thread{ &IOCP::init_server, &(me->m_iocp) };
 
 			ShowWindow(me->m_server_shutdown_button, SW_SHOW);
 
@@ -102,8 +103,9 @@ LRESULT CALLBACK win_main_class::m_WndProc(HWND hWnd, UINT message, WPARAM wPara
 		case server_shutdown: {
 			ShowWindow(me->m_server_shutdown_button, SW_HIDE);
 
-			//me->future_func.get();
-			me->m_iocp.release_IOCP();
+			me->m_iocp.stop_IOCP();
+			me->th->join();
+			delete me->th;
 
 			ShowWindow(me->m_server_start_button, SW_SHOW);
 

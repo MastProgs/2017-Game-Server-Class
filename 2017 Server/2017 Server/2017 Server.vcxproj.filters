@@ -44,5 +44,8 @@
     <ClInclude Include="stdafx.h">
       <Filter>소스 파일\00.Default</Filter>
     </ClInclude>
+    <ClInclude Include="protocol.h">
+      <Filter>소스 파일\00.Default</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

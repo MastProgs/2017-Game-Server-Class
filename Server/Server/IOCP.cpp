@@ -3,12 +3,15 @@
 
 IOCP::IOCP()
 {
+	WSADATA wsa;
+	WSAStartup(MAKEWORD(2, 2), &wsa);
 }
 
 
 IOCP::~IOCP()
 {
 	release_IOCP();
+	WSACleanup();
 }
 
 char * IOCP::get_server_IP() {
@@ -36,9 +39,6 @@ void IOCP::init_server() {
 	m_b_server_shut_down = false;
 	m_clients.reserve(MAX_USER);
 
-	WSADATA wsa;
-	WSAStartup(MAKEWORD(2, 2), &wsa);
-
 	m_hiocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, NULL, 0);
 	if (NULL == m_hiocp) { err_quit(L"IOCP::Init_Server", WSAGetLastError()); }
 
@@ -55,8 +55,23 @@ void IOCP::release_IOCP() {
 			delete player;
 		}
 	}
+}
 
-	WSACleanup();
+void IOCP::stop_IOCP()
+{
+	release_IOCP();
+
+	unsigned long long id = { 0 };
+	DWORD io_size = { 0 };
+	OVLP_EX *over = new OVLP_EX;
+	over->event_type = E_SERVER_SHUT_DOWN;
+	over->wsabuf.buf = reinterpret_cast<char *>(over->iocp_buf);
+	over->wsabuf.len = 0;
+	
+	for (int i = 0; i < m_cpu_core * 2; ++i)
+	{		
+		BOOL result = PostQueuedCompletionStatus(m_hiocp, io_size, id, reinterpret_cast<LPOVERLAPPED>(over));
+	}
 }
 
 void IOCP::accept_thread()
@@ -117,11 +132,15 @@ void IOCP::worker_thread()
 		unsigned long long id = { 0 };
 		DWORD io_size = { 0 };
 		OVLP_EX *ovlp = { nullptr };
+		DWORD wait_time = 1000;	// 안먹힘 - 알수없는 오류
 
-		bool result = GetQueuedCompletionStatus(m_hiocp, &io_size, &id, reinterpret_cast<LPOVERLAPPED *>(ovlp), 1000 * 60);
+		BOOL result = GetQueuedCompletionStatus(m_hiocp, &io_size, &id, reinterpret_cast<LPOVERLAPPED *>(ovlp), INFINITE);
 		if (false == result || 0 == io_size) {
-			// GQCS 가 시간되어 return && server shut down 상태인 경우
-			if (nullptr == ovlp && false == m_b_server_shut_down) { if (true == m_b_debug_mode) { printf("Worker Thread Returned !! \n"); } continue; }
+			//if (nullptr == ovlp && true == m_b_server_shut_down) {
+			//	// GQCS 가 시간되어 return && server shut down 상태인 경우
+			//	if (true == m_b_debug_mode) { printf("Worker Thread Returned !! \n"); }
+			//	continue;
+			//}
 			if (false == result) { err_display("GQCS()", GetLastError(), __LINE__, __FUNCTION__, id); }
 
 			m_clients[id]->close_socket();
@@ -143,6 +162,10 @@ void IOCP::worker_thread()
 			delete ovlp;
 			continue;
 		}
+		else if (E_SERVER_SHUT_DOWN == ovlp->event_type) {
+			delete ovlp;
+			continue;
+		}
 		else {
 			if (true == m_b_debug_mode) { printf("Unknown IOCP event !!\n"); }
 			exit(-1);
@@ -155,9 +178,9 @@ void IOCP::create_threads()
 	get_cpu_core();
 
 	vector<thread *> worker_threads;
-	worker_threads.reserve(m_cpu_core);
+	worker_threads.reserve(m_cpu_core * 2);
 
-	for (int i = 0; i < m_cpu_core; ++i)
+	for (int i = 0; i < m_cpu_core * 2; ++i)
 	{
 		worker_threads.emplace_back(new thread{ &IOCP::worker_thread, this });
 	}
@@ -199,7 +222,7 @@ short IOCP::get_cpu_core()
 {
 	SYSTEM_INFO si;
 	GetSystemInfo(&si);
-	m_cpu_core = static_cast<int>(si.dwNumberOfProcessors);
+	m_cpu_core = static_cast<int>(si.dwNumberOfProcessors) / 2;
 	if (true == m_b_debug_mode) { printf("CPU Core Count = %d, threads = %d\n", m_cpu_core, m_cpu_core * 2); }
 
 	return m_cpu_core;

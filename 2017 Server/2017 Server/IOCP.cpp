@@ -106,7 +106,7 @@ void IOCP::accept_thread()
 		display_client_info(m_ui_player_key, clientaddr);
 
 		CreateIoCompletionPort(reinterpret_cast<HANDLE>(client_sock), m_hiocp, m_ui_player_key, 0);
-		m_clients.emplace_back(new Player_Session(client_sock, true, m_ui_player_key));
+		m_clients.emplace_back(new Player_Session(client_sock, true, m_ui_player_key, &m_clients));
 
 		/* other client info send recv & view list */
 
@@ -126,10 +126,8 @@ void IOCP::worker_thread()
 		DWORD io_size = { 0 };
 		OVLP_EX *ovlp = { nullptr };
 
-		bool result = GetQueuedCompletionStatus(m_hiocp, &io_size, &id, reinterpret_cast<LPOVERLAPPED *>(ovlp), 1000 * 60);
+		bool result = GetQueuedCompletionStatus(m_hiocp, &io_size, &id, reinterpret_cast<LPOVERLAPPED *>(ovlp), INFINITE);
 		if (false == result || 0 == io_size) {
-			// GQCS 가 시간되어 return && server shut down 상태인 경우
-			if (nullptr == ovlp && false == m_b_server_shut_down) { if (true == m_b_debug_mode) { printf("Worker Thread Returned !! \n"); } continue; }
 			if (false == result) { err_display("GQCS()", GetLastError(), __LINE__, __FUNCTION__, id); }
 
 			m_clients[id]->close_socket();
@@ -161,9 +159,9 @@ void IOCP::worker_thread()
 void IOCP::create_threads()
 {
 	vector<thread *> worker_threads;
-	worker_threads.reserve(m_cpu_core);
+	worker_threads.reserve(m_cpu_core * 2);
 
-	for (int i = 0; i < m_cpu_core; ++i)
+	for (int i = 0; i < m_cpu_core * 2; ++i)
 	{
 		worker_threads.emplace_back(new thread{ &IOCP::worker_thread, this });
 	}
@@ -205,7 +203,7 @@ short IOCP::get_cpu_core()
 {
 	SYSTEM_INFO si;
 	GetSystemInfo(&si);
-	m_cpu_core = static_cast<int>(si.dwNumberOfProcessors);
+	m_cpu_core = static_cast<int>(si.dwNumberOfProcessors) / 2;
 	if (true == m_b_debug_mode) { printf("CPU Core Count = %d, threads = %d\n", m_cpu_core, m_cpu_core * 2); }
 
 	return m_cpu_core;

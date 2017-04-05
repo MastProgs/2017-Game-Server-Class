@@ -10,7 +10,8 @@ public:
 
 	char* get_server_IP();
 	void init_server();
-	void release_IOCP();
+	void stop_IOCP();
+
 private:
 
 	HANDLE m_hiocp = { 0 };
@@ -24,6 +25,7 @@ private:
 	void accept_thread();
 	void worker_thread();
 	void create_threads();
+	void release_IOCP();
 
 	void err_quit(wchar_t *msg, int err_no);
 	void err_display(char *msg, int err_no, int line, char *func, int id);
