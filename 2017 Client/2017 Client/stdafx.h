@@ -7,7 +7,12 @@
 #include <iostream>
 using namespace std;
 
+#include <unordered_map>
+
 #include "../../2017 Server/2017 Server/protocol.h"
 #include "resource.h"
+#define WM_SOCKET (WM_USER + 1)
+
+#include "player_class.h"
 #include "network_class.h"
 #include "win_main_class.h"

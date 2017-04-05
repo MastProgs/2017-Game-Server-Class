@@ -30,7 +30,7 @@ win_main_class::win_main_class(const _In_ HINSTANCE hInstance, const _In_ int nC
 	m_hWnd = CreateWindow(m_WndClass.lpszClassName, m_WndClass.lpszClassName, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, window_size.right - window_size.left, window_size.bottom - window_size.top, nullptr, nullptr, hInstance, nullptr);
 	ShowWindow(m_hWnd, nCmdShow);
 	
-	network_class network(m_hWnd, hInstance);
+	m_network.init(m_hWnd, hInstance, &m_player);
 
 	while (GetMessage(&m_Message, NULL, 0, 0))
 	{
@@ -48,22 +48,57 @@ LRESULT CALLBACK win_main_class::m_WndProc(HWND hWnd, UINT message, WPARAM wPara
 	
 	switch (message)
 	{
-	case WM_PAINT: {		
+	case WM_PAINT: {
+
+		int circle_range_size{ 30 };	// player 반지름
 		me->m_hdc = BeginPaint(hWnd, &me->m_ps);
+
+		// player 위치 찾아 그리기
+		Ellipse(me->m_hdc, me->m_player.get_pos()->x * circle_range_size,
+			me->m_player.get_pos()->y * circle_range_size,
+			me->m_player.get_pos()->x * circle_range_size + circle_range_size,
+			me->m_player.get_pos()->y * circle_range_size + circle_range_size);
+
+		// map 그리기
+		int draw_for_x = 0;
+		int draw_for_y = 0;
+		for (int i = 0; i < MAX_MAP_SIZE; ++i)
+		{
+			draw_for_y += circle_range_size;
+			for (int j = 0; j < MAX_MAP_SIZE; ++j) {
+				draw_for_x += circle_range_size;
+				MoveToEx(me->m_hdc, draw_for_x - circle_range_size, draw_for_y, NULL);
+				LineTo(me->m_hdc, draw_for_x, draw_for_y);
+				MoveToEx(me->m_hdc, draw_for_x, draw_for_y, NULL);
+				LineTo(me->m_hdc, draw_for_x, draw_for_y - circle_range_size);
+			}
+			draw_for_x = 0;
+		}
 
 		EndPaint(hWnd, &me->m_ps);
 		break;
 	}
+	case WM_SOCKET: {
+		me->m_network.process_win_msg(lParam);
+		InvalidateRect(hWnd, NULL, TRUE);
+		break;
+	}
+	case WM_KEYDOWN: {
+		cs_packet_move packet;
+		packet.input_key = me->m_player.key_input(wParam);
+		me->m_network.send_packet(packet.size, packet.type, &packet);
+		break;
+	}
+	case WM_CREATE: {
+
+		break;
+	}
+	case WM_DESTROY: {
+
+		PostQuitMessage(0);
+		break;
+	}
 	default:
-		case WM_CREATE: {
-
-			break;
-		}
-		case WM_DESTROY: {
-
-			PostQuitMessage(0);
-			break;
-		}
 		break;
 	}
 

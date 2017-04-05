@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
-Player_Session::Player_Session(SOCKET s, bool connected, unsigned long long id, vector<Player_Session*> * p) : m_s{ move(s) }, m_b_connected{ connected }, m_id{ id }, m_clients{ p }
+Player_Session::Player_Session(SOCKET s, bool connected, unsigned long long id, vector<Player_Session*> * p) : m_s{ s }, m_b_connected{ connected }, m_id{ id }, m_clients{ p }
 {
 	// initialize in here **
 
@@ -37,11 +37,6 @@ int Player_Session::send_packet(const Packet *buf)
 int Player_Session::wsa_recv() {
 	DWORD flags = { 0 };
 	return WSARecv(m_s, &m_ovlp.wsabuf, 1, NULL, &flags, &m_ovlp.over, NULL);
-}
-
-bool Player_Session::get_connect_state()
-{
-	return m_b_connected;
 }
 
 void Player_Session::close_socket()
@@ -80,21 +75,28 @@ int Player_Session::packet_ressembly(DWORD packet_size)
 
 void Player_Session::process_packet()
 {
-	PACKET_TYPE event_type = *reinterpret_cast<PACKET_TYPE *>(&m_buf.buf[1]);
+	char event_type = m_buf.buf[1];
 
 	switch (event_type)
 	{
 	case MOVE: {
 
-		if (m_buf.buf[2] & KEY_UP) { if (-1 != (m_pos.y - 1)) { --m_pos.y; }}
-		else if (m_buf.buf[2] & KEY_DOWN) { if (MAX_MAP_SIZE != (m_pos.y + 1)) { ++m_pos.y; }}
-		else if (m_buf.buf[2] & KEY_RIGHT) { if (MAX_MAP_SIZE != (m_pos.x + 1)) { ++m_pos.x; } }
-		else if (m_buf.buf[2] & KEY_LEFT) { if (-1 != (m_pos.x - 1)) { --m_pos.x; } }
+		cs_packet_move packet = *reinterpret_cast<cs_packet_move*>(&m_buf.buf[2]);
+
+		if (packet.input_key & KEY_UP) { if (-1 != (m_pos.y - 1)) { --m_pos.y; }}
+		else if (packet.input_key & KEY_DOWN) { if (MAX_MAP_SIZE != (m_pos.y + 1)) { ++m_pos.y; }}
+		else if (packet.input_key & KEY_RIGHT) { if (MAX_MAP_SIZE != (m_pos.x + 1)) { ++m_pos.x; } }
+		else if (packet.input_key & KEY_LEFT) { if (-1 != (m_pos.x - 1)) { --m_pos.x; } }
 
 		sc_packet_move my_pos;
+		my_pos.size = sizeof(my_pos);
+		my_pos.id = m_id;
 		my_pos.pos = m_pos;
 
-		for (auto players : *m_clients) { send_packet(reinterpret_cast<Packet*>(&my_pos)); }
+		for (auto players : *m_clients) {
+			if (false == players->get_connect_state()) { continue; }
+			send_packet(reinterpret_cast<Packet*>(&my_pos));
+		}
 
 		break;
 	}

@@ -22,6 +22,9 @@
     <Filter Include="소스 파일\01.Network Class">
       <UniqueIdentifier>{e9f7b624-9c6f-4b7f-951a-1dceae2f602c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\02.Player Class">
+      <UniqueIdentifier>{64e265f0-ee9c-430d-a240-27d13d02241f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="win_main_class.cpp">
@@ -32,6 +35,9 @@
     </ClCompile>
     <ClCompile Include="network_class.cpp">
       <Filter>소스 파일\01.Network Class</Filter>
+    </ClCompile>
+    <ClCompile Include="player_class.cpp">
+      <Filter>소스 파일\02.Player Class</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -49,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="..\..\2017 Server\2017 Server\protocol.h">
       <Filter>소스 파일\99.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="player_class.h">
+      <Filter>소스 파일\02.Player Class</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

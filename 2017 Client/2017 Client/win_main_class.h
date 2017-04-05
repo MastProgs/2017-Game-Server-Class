@@ -17,6 +17,10 @@ class win_main_class
 	// call back function
 	static LRESULT CALLBACK m_WndProc(HWND, UINT, WPARAM, LPARAM);
 
+	// network
+	network_class m_network;
+	player_class m_player;
+
 public:
 	win_main_class(const _In_ HINSTANCE hInstance, const _In_ int nCmdShow);
 	~win_main_class();

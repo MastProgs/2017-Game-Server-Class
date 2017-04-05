@@ -110,6 +110,31 @@ void IOCP::accept_thread()
 
 		/* other client info send recv & view list */
 
+		sc_packet_init packet_init;
+		packet_init.id = m_ui_player_key;
+		packet_init.pos.x = 0;
+		packet_init.pos.y = 0;
+		m_clients[m_ui_player_key]->send_packet(reinterpret_cast<Packet*>(&packet_init));
+
+		sc_packet_move packet_to_me;
+		sc_packet_move packet_to_other;
+
+		packet_to_me.id = m_ui_player_key;
+		packet_to_me.pos.x = 0;
+		packet_to_me.pos.y = 0;
+
+		for (auto players : m_clients)
+		{
+			if (false == players->get_connect_state()) { continue; }
+			if (m_ui_player_key == players->get_id()) { continue; }
+
+			packet_to_other.id = players->get_id();
+			packet_to_other.pos = *players->get_pos();
+
+			players->send_packet(reinterpret_cast<Packet*>(&packet_to_other));
+			m_clients[m_ui_player_key]->send_packet(reinterpret_cast<Packet*>(&packet_to_me));
+		}
+
 		retval = m_clients[m_ui_player_key]->wsa_recv();
 		if (SOCKET_ERROR == retval) {
 			int err_no = WSAGetLastError();
@@ -126,12 +151,12 @@ void IOCP::worker_thread()
 		DWORD io_size = { 0 };
 		OVLP_EX *ovlp = { nullptr };
 
-		bool result = GetQueuedCompletionStatus(m_hiocp, &io_size, &id, reinterpret_cast<LPOVERLAPPED *>(ovlp), INFINITE);
+		BOOL result = GetQueuedCompletionStatus(m_hiocp, &io_size, &id, reinterpret_cast<LPOVERLAPPED*>(&ovlp), INFINITE);
 		if (false == result || 0 == io_size) {
 			if (false == result) { err_display("GQCS()", GetLastError(), __LINE__, __FUNCTION__, id); }
 
 			m_clients[id]->close_socket();
-			if (true == m_b_debug_mode) { printf("Client No. %%3llu"); }
+			if (true == m_b_debug_mode) { printf("Client No. [ %3llu ] Disconnected", id); }
 
 			/* send msg & check out view list */
 

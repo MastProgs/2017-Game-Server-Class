@@ -7,6 +7,7 @@ public:
 	~IOCP();
 
 	bool m_b_debug_mode = { false };
+	bool m_b_server_shut_down = { false };
 
 	char* get_server_IP();
 	void init_server();
@@ -17,7 +18,6 @@ private:
 	HANDLE m_hiocp = { 0 };
 	char m_server_ip[50] = { 0 };
 	short m_cpu_core = { 1 };
-	bool m_b_server_shut_down = { false };
 	unsigned long long m_ui_player_key = { _UI64_MAX };
 
 	vector<Player_Session*> m_clients;
@@ -33,5 +33,6 @@ private:
 	short get_cpu_core();
 	void display_client_info(const unsigned int &key, const SOCKADDR_IN& addr_in);
 	bool is_max_user();
+	void shut_down_for_self_accept();
 };
 

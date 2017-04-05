@@ -45,13 +45,36 @@ void IOCP::init_server() {
 	create_threads();
 }
 
+void IOCP::shut_down_for_self_accept() {
+	SOCKET m_sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0);
+	if (INVALID_SOCKET == m_sock) { err_quit(L"socket()", WSAGetLastError()); }
+
+	// connect
+	SOCKADDR_IN serveraddr;
+	ZeroMemory(&serveraddr, sizeof(serveraddr));
+	serveraddr.sin_family = AF_INET;
+	serveraddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	serveraddr.sin_port = htons(SERVER_PORT);
+
+	int retval = WSAConnect(m_sock, (SOCKADDR *)&serveraddr, sizeof(serveraddr), NULL, NULL, NULL, NULL);
+	if (SOCKET_ERROR == retval) {
+		// 비동기 소켓이라 그냥 리턴, 검사 해주어야 함
+		int err_no = WSAGetLastError();
+		if (err_no != WSAEWOULDBLOCK) {
+			err_quit(L"connect()", err_no);
+		}
+	}
+}
+
 void IOCP::release_IOCP() {
 	
 	m_b_server_shut_down = true;
 
+	shut_down_for_self_accept();
+
 	for (auto player : m_clients) {
 		if (nullptr != player) {
-			if (player->get_connect_state()) { player->close_socket();	}
+			if (true == player->get_connect_state()) { player->close_socket();	}
 			delete player;
 		}
 	}
@@ -61,17 +84,7 @@ void IOCP::stop_IOCP()
 {
 	release_IOCP();
 
-	unsigned long long id = { 0 };
-	DWORD io_size = { 0 };
-	OVLP_EX *over = new OVLP_EX;
-	over->event_type = E_SERVER_SHUT_DOWN;
-	over->wsabuf.buf = reinterpret_cast<char *>(over->iocp_buf);
-	over->wsabuf.len = 0;
-	
-	for (int i = 0; i < m_cpu_core * 2; ++i)
-	{		
-		BOOL result = PostQueuedCompletionStatus(m_hiocp, io_size, id, reinterpret_cast<LPOVERLAPPED>(over));
-	}
+	if (true == m_b_debug_mode) { printf("Server Shut down Complete in Safe\n"); }
 }
 
 void IOCP::accept_thread()
@@ -132,19 +145,18 @@ void IOCP::worker_thread()
 		unsigned long long id = { 0 };
 		DWORD io_size = { 0 };
 		OVLP_EX *ovlp = { nullptr };
-		DWORD wait_time = 1000;	// 안먹힘 - 알수없는 오류
+		DWORD wait_time = 1000;
 
-		BOOL result = GetQueuedCompletionStatus(m_hiocp, &io_size, &id, reinterpret_cast<LPOVERLAPPED *>(ovlp), INFINITE);
+		BOOL result = GetQueuedCompletionStatus(m_hiocp, &io_size, &id, reinterpret_cast<LPOVERLAPPED *>(&ovlp), wait_time);
 		if (false == result || 0 == io_size) {
-			//if (nullptr == ovlp && true == m_b_server_shut_down) {
-			//	// GQCS 가 시간되어 return && server shut down 상태인 경우
-			//	if (true == m_b_debug_mode) { printf("Worker Thread Returned !! \n"); }
-			//	continue;
-			//}
+			if (nullptr == ovlp) {
+				if (true == m_b_server_shut_down) { return; }
+				continue;
+			}
 			if (false == result) { err_display("GQCS()", GetLastError(), __LINE__, __FUNCTION__, id); }
 
 			m_clients[id]->close_socket();
-			if (true == m_b_debug_mode) { printf("Client No. %%3llu"); }
+			if (true == m_b_debug_mode) { printf("Client No. %3llu", id); }
 
 			/* send msg & check out view list */
 

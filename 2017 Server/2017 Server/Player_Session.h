@@ -10,6 +10,13 @@ using OVLP_EX = struct OVERLAP_EX
 	EVENT_TYPE event_type = { E_RECV };
 };
 
+using BUFS = struct PACKET_INFO
+{
+	Packet buf[MAX_PACKET_SIZE] = { 0 };
+	int size_prev = { 0 };
+	int size_curr = { 0 };
+};
+
 class Player_Session
 {
 public:
@@ -18,7 +25,11 @@ public:
 
 	int send_packet(const Packet *buf);
 	int wsa_recv();
-	bool get_connect_state();
+
+	inline unsigned long long get_id() { return m_id; }
+	inline bool get_connect_state() { return m_b_connected; };
+	inline POS* get_pos() { return &m_pos; }
+
 	void close_socket();
 
 	int packet_ressembly(DWORD packet_size);
