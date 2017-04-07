@@ -115,6 +115,7 @@ void IOCP::accept_thread()
 		m_clients.emplace_back(new Player_Session(client_sock, true, m_ui_player_key, &m_clients));
 
 		/* other client info send recv & view list */
+		// 현재 기존 플레이어가 나가고, 다음 플레이어가 접속하면 버그가 있다.
 
 		sc_packet_init packet_init;
 		packet_init.id = m_ui_player_key;
@@ -165,6 +166,14 @@ void IOCP::worker_thread()
 			if (true == m_b_debug_mode) { printf("Client No. [ %3llu ] Disconnected", id); }
 
 			/* send msg & check out view list */
+			sc_packet_player_disconnect packet;
+			packet.id = id;
+
+			for (auto players : m_clients) {
+				if (false == players->get_connect_state()) { continue; }
+
+				players->send_packet(reinterpret_cast<Packet *>(&packet));
+			}
 
 			continue;
 		}

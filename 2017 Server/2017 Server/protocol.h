@@ -20,7 +20,9 @@ using POS = struct POSITION
 enum PACKET_TYPE
 {
 	INIT,
+	DISCONNECT_PLAYER,
 	MOVE,
+
 };
 
 #define KEY_UP		0b00000001
@@ -36,6 +38,13 @@ using sc_packet_init = struct SERVER_TO_CLIENT_PACKET_INIT
 	BYTE type = { INIT };
 	unsigned long long id = { 0 };
 	POS pos;
+};
+
+using sc_packet_player_disconnect = struct SERVER_TO_CLIENT_PLAYER_DISCONNECT
+{
+	BYTE size = { sizeof(BYTE) + sizeof(BYTE) + sizeof(unsigned long long) };
+	BYTE type = { DISCONNECT_PLAYER };
+	unsigned long long id = { 0 };
 };
 
 using sc_packet_move = struct SERVER_TO_CLIENT_PACKET_MOVE

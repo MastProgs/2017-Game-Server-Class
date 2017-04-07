@@ -13,5 +13,6 @@ public:
 	int key_input(WPARAM);
 
 	inline POS* get_pos() { return &m_pos; };
+	inline unordered_map<unsigned long long, POS>* get_other_players() { return &m_other_players; }
 };
 

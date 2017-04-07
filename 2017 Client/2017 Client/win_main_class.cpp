@@ -75,6 +75,14 @@ LRESULT CALLBACK win_main_class::m_WndProc(HWND hWnd, UINT message, WPARAM wPara
 			draw_for_x = 0;
 		}
 
+		// 딴 플레이어 그리기
+		for (auto other_players : *me->m_player.get_other_players()) {
+			Ellipse(me->m_hdc, other_players.second.x * circle_range_size,
+				other_players.second.y * circle_range_size,
+				other_players.second.x * circle_range_size + circle_range_size,
+				other_players.second.y * circle_range_size + circle_range_size);
+		}
+
 		EndPaint(hWnd, &me->m_ps);
 		break;
 	}

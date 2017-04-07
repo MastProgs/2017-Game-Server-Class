@@ -26,6 +26,11 @@ void player_class::process_packet(Packet *buf)
 
 		break;
 	}
+	case DISCONNECT_PLAYER: {
+		sc_packet_player_disconnect packet = *reinterpret_cast<sc_packet_player_disconnect*>(buf);
+		m_other_players.erase(packet.id);
+		break;
+	}
 	case INIT: {
 
 		sc_packet_init packet = *reinterpret_cast<sc_packet_init*>(&buf[2]);
