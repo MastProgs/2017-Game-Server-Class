@@ -4,7 +4,12 @@
 IOCP::IOCP()
 {
 	_wsetlocale(LC_ALL, L"korean");
+#ifdef _DEBUG
 	m_b_debug_mode = true;
+#else
+	m_b_debug_mode = false;
+#endif // _DEBUG
+
 
 	get_server_IP();
 	get_cpu_core();
@@ -77,6 +82,7 @@ void IOCP::accept_thread()
 
 	// bind()
 	struct sockaddr_in serveraddr = { 0 };
+	ZeroMemory(&serveraddr, sizeof(serveraddr));
 	serveraddr.sin_family = AF_INET;
 	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serveraddr.sin_port = htons(SERVER_PORT);

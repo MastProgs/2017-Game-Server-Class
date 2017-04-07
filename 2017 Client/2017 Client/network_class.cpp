@@ -108,7 +108,11 @@ void network_class::err_display(char * msg, int err_no, int line, char * func, i
 
 void network_class::init(const HWND &hw, const HINSTANCE &hi, void *player_class_ptr) {
 	me = this;
+#ifdef _DEBUG
 	m_b_debug_mode = true;
+#else
+	m_b_debug_mode = false;
+#endif // _DEBUG
 	if (true == m_b_debug_mode) {
 		AllocConsole();
 		freopen("conout$", "wt", stdout);
