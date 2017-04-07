@@ -15,11 +15,7 @@ void player_class::process_packet(Packet *buf)
 	switch (type)
 	{
 	case MOVE: {
-
-		sc_packet_move packet = *reinterpret_cast<sc_packet_move*>(&buf[2]);
-		/*packet.id = (*reinterpret_cast<sc_packet_move*>(&buf[2])).id;
-		packet.pos.x = (*reinterpret_cast<sc_packet_move*>(&buf[2])).pos.x;
-		packet.pos.y = (*reinterpret_cast<sc_packet_move*>(&buf[2])).pos.y;*/
+		sc_packet_move packet = *reinterpret_cast<sc_packet_move*>(buf);
 
 		if (packet.id != m_id) {
 			m_other_players.insert(make_pair(packet.id, packet.pos));

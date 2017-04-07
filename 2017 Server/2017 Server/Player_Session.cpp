@@ -22,7 +22,7 @@ int Player_Session::send_packet(const Packet *buf)
 	over->wsabuf.buf = reinterpret_cast<char *>(over->iocp_buf);
 	over->wsabuf.len = buf[0];
 	memcpy(over->iocp_buf, buf, buf[0]);
-
+	
 	DWORD flags{ 0 };
 	int retval = WSASend(m_s, &over->wsabuf, 1, NULL, flags, &over->over, NULL);
 	if (SOCKET_ERROR == retval) {
@@ -92,7 +92,7 @@ void Player_Session::process_packet()
 		my_pos.size = sizeof(my_pos);
 		my_pos.id = m_id;
 		my_pos.pos = m_pos;
-
+		
 		for (auto players : *m_clients) {
 			if (false == players->get_connect_state()) { continue; }
 			send_packet(reinterpret_cast<Packet*>(&my_pos));

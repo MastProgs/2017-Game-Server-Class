@@ -76,9 +76,9 @@ void network_class::server_to_connect()
 	if (SOCKET_ERROR == m_retval) {	err_quit(L"ioctlsocket()", WSAGetLastError()); }
 
 	m_buf.wsabuf_recv.buf = reinterpret_cast<CHAR*>(m_buf.buf_recv);
-	m_buf.wsabuf_recv.len = MAX_PACKET_SIZE;
+	m_buf.wsabuf_recv.len = sizeof(m_buf.buf_recv);
 	m_buf.wsabuf_send.buf = reinterpret_cast<CHAR*>(m_buf.buf_send);
-	m_buf.wsabuf_send.len = MAX_PACKET_SIZE;
+	m_buf.wsabuf_send.len = sizeof(m_buf.buf_send);
 
 	if (true == m_b_debug_mode) { printf("Connect Server Complete\n"); }
 }
@@ -164,7 +164,9 @@ void network_class::process_win_msg(LPARAM lparam)
 			int required = m_buf.size_curr - m_buf.size_prev;
 			if (remained >= required) {
 				memcpy(m_buf.buf + m_buf.size_prev, buf_ptr, required);
+
 				m_player->process_packet(m_buf.buf);
+
 				buf_ptr += required;
 				remained -= required;
 				m_buf.size_curr = 0;
@@ -176,7 +178,28 @@ void network_class::process_win_msg(LPARAM lparam)
 				m_buf.size_prev += remained;
 				remained = 0;
 			}
-		}
+		}/*
+		int remained = ioByteSize;
+		while (0 < remained) {
+			if (0 == m_buf.size_curr) { m_buf.size_curr = buf_ptr[0]; }
+			int required = m_buf.size_curr - m_buf.size_prev;
+			if (remained >= required) {
+				memcpy(m_buf.buf + m_buf.size_prev, buf_ptr, required);
+
+				m_player->process_packet(m_buf.buf);
+
+				buf_ptr += required;
+				remained -= required;
+				m_buf.size_curr = 0;
+				m_buf.size_prev = 0;
+			}
+			else {
+				memcpy(m_buf.buf + m_buf.size_prev, buf_ptr, remained);
+				buf_ptr += remained;
+				m_buf.size_prev += remained;
+				remained = 0;
+			}
+		}*/
 	}
 	default:
 		break;
