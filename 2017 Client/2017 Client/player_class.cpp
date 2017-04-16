@@ -18,7 +18,7 @@ void player_class::process_packet(Packet *buf)
 		sc_packet_move packet = *reinterpret_cast<sc_packet_move*>(buf);
 
 		if (packet.id != m_id) {
-			m_other_players.insert(make_pair(packet.id, packet.pos));
+			m_other_players[packet.id] = packet.pos;
 			return;
 		}
 
@@ -33,7 +33,7 @@ void player_class::process_packet(Packet *buf)
 	}
 	case INIT: {
 
-		sc_packet_init packet = *reinterpret_cast<sc_packet_init*>(&buf[2]);
+		sc_packet_init packet = *reinterpret_cast<sc_packet_init*>(buf);
 		m_id = packet.id;
 		m_pos = packet.pos;
 

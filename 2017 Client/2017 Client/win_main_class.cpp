@@ -50,37 +50,40 @@ LRESULT CALLBACK win_main_class::m_WndProc(HWND hWnd, UINT message, WPARAM wPara
 	{
 	case WM_PAINT: {
 
-		int circle_range_size{ 30 };	// player 반지름
+		int ratio = { 30 };	// player 전체 기준 반지름 & 한 블럭당 크기
+		int ratio_other = { 5 }; // 다른 플레이어 반지름 감소 비율
 		me->m_hdc = BeginPaint(hWnd, &me->m_ps);
 
 		// player 위치 찾아 그리기
-		Ellipse(me->m_hdc, me->m_player.get_pos()->x * circle_range_size,
-			me->m_player.get_pos()->y * circle_range_size,
-			me->m_player.get_pos()->x * circle_range_size + circle_range_size,
-			me->m_player.get_pos()->y * circle_range_size + circle_range_size);
+		Ellipse(me->m_hdc,
+			me->m_player.get_pos()->x * ratio,
+			me->m_player.get_pos()->y * ratio,
+			me->m_player.get_pos()->x * ratio + ratio,
+			me->m_player.get_pos()->y * ratio + ratio);
 
 		// map 그리기
 		int draw_for_x = 0;
 		int draw_for_y = 0;
 		for (int i = 0; i < MAX_MAP_SIZE; ++i)
 		{
-			draw_for_y += circle_range_size;
+			draw_for_y += ratio;
 			for (int j = 0; j < MAX_MAP_SIZE; ++j) {
-				draw_for_x += circle_range_size;
-				MoveToEx(me->m_hdc, draw_for_x - circle_range_size, draw_for_y, NULL);
+				draw_for_x += ratio;
+				MoveToEx(me->m_hdc, draw_for_x - ratio, draw_for_y, NULL);
 				LineTo(me->m_hdc, draw_for_x, draw_for_y);
 				MoveToEx(me->m_hdc, draw_for_x, draw_for_y, NULL);
-				LineTo(me->m_hdc, draw_for_x, draw_for_y - circle_range_size);
+				LineTo(me->m_hdc, draw_for_x, draw_for_y - ratio);
 			}
 			draw_for_x = 0;
 		}
 
 		// 딴 플레이어 그리기
 		for (auto other_players : *me->m_player.get_other_players()) {
-			Ellipse(me->m_hdc, other_players.second.x * circle_range_size,
-				other_players.second.y * circle_range_size,
-				other_players.second.x * circle_range_size + circle_range_size,
-				other_players.second.y * circle_range_size + circle_range_size);
+			Ellipse(me->m_hdc,
+				other_players.second.x * ratio + ratio_other,
+				other_players.second.y * ratio + ratio_other,
+				other_players.second.x * ratio + ratio - ratio_other,
+				other_players.second.y * ratio + ratio - ratio_other);
 		}
 
 		EndPaint(hWnd, &me->m_ps);

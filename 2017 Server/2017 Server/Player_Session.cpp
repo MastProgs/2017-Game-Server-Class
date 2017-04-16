@@ -95,7 +95,7 @@ void Player_Session::process_packet()
 		
 		for (auto players : *m_clients) {
 			if (false == players->get_connect_state()) { continue; }
-			send_packet(reinterpret_cast<Packet*>(&my_pos));
+			players->send_packet(reinterpret_cast<Packet*>(&my_pos));
 		}
 
 		break;

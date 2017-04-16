@@ -123,23 +123,23 @@ void IOCP::accept_thread()
 		packet_init.pos.y = 0;
 		m_clients[m_ui_player_key]->send_packet(reinterpret_cast<Packet*>(&packet_init));
 
-		sc_packet_move packet_to_me;
-		sc_packet_move packet_to_other;
+		sc_packet_move my_info;
+		sc_packet_move other_info;
 
-		packet_to_me.id = m_ui_player_key;
-		packet_to_me.pos.x = 0;
-		packet_to_me.pos.y = 0;
+		my_info.id = m_ui_player_key;
+		my_info.pos.x = 0;
+		my_info.pos.y = 0;
 
 		for (auto players : m_clients)
 		{
 			if (false == players->get_connect_state()) { continue; }
 			if (m_ui_player_key == players->get_id()) { continue; }
 
-			packet_to_other.id = players->get_id();
-			packet_to_other.pos = *players->get_pos();
+			other_info.id = players->get_id();
+			other_info.pos = *players->get_pos();
 
-			players->send_packet(reinterpret_cast<Packet*>(&packet_to_other));
-			m_clients[m_ui_player_key]->send_packet(reinterpret_cast<Packet*>(&packet_to_me));
+			players->send_packet(reinterpret_cast<Packet*>(&my_info));
+			m_clients[m_ui_player_key]->send_packet(reinterpret_cast<Packet*>(&other_info));
 		}
 
 		retval = m_clients[m_ui_player_key]->wsa_recv();
@@ -163,7 +163,7 @@ void IOCP::worker_thread()
 			if (false == result) { err_display("GQCS()", GetLastError(), __LINE__, __FUNCTION__, id); }
 
 			m_clients[id]->close_socket();
-			if (true == m_b_debug_mode) { printf("Client No. [ %3llu ] Disconnected", id); }
+			if (true == m_b_debug_mode) { printf("Client No. [ %3llu ] Disconnected\n", id); }
 
 			/* send msg & check out view list */
 			sc_packet_player_disconnect packet;
