@@ -10,21 +10,19 @@ extern "C" {
 }
 
 int main() {
-	int row, col;
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
 	luaL_loadfile(L, "script.lua");
-	lua_pcall(L, 0, 0, 0);
+	lua_pcall(L, 0, 0, 0);	// 일단 실행 한번은 해야 내부 변수 값들이 정의 된다.
 
-	lua_getglobal(L, "rows"); // rows 를 먼저 stack 에 담고
-	lua_getglobal(L, "cols"); // cols 를 먼저 stack 에 담는다.
+	lua_getglobal(L, "plustwo"); // 함수를 읽어 놓음
+	lua_pushnumber(L, 100);	// 함수 인자 인풋값 스택에 담아 놓음
+	lua_pcall(L, 1, 1, 0);	// 인자 하나, 결과 값 하나 ( 리턴 스택 말고는 전부 pop )
 
-	row = (int)lua_tonumber(L, -2); // row 가 뒤에 두번재 있으므로 -2
-	col = (int)lua_tonumber(L, -1); // col 은 탑 기준으로 -1 번째 있으므로 -1
-	// top 이 0, 0에는 아무 데이터도 없다.
+	int result = (int)lua_tonumber(L, -1);
 
-	cout << "Rows " << row << " Cols " << col << endl;
+	cout << "Result : " << result << endl;
 
-	lua_pop(L, 2);
+	lua_pop(L, 1);
 	lua_close(L);
 }
