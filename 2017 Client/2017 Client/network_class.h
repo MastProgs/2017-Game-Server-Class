@@ -42,6 +42,8 @@ public:
 	void init(const HWND&, const HINSTANCE&, void*);
 	void process_win_msg(LPARAM);
 
+	template<typename T>
+	bool send_packet(T *buf);
 	bool send_packet(BYTE data_size, BYTE type, void *buf);
 };
 

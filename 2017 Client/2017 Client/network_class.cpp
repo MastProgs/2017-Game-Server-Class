@@ -234,3 +234,29 @@ bool network_class::send_packet(BYTE data_size, BYTE type, void *buf)
 
 	return true;
 }
+
+// 현재 외부 기호를 알수 없다면서 작동 안함
+template<typename T>
+bool network_class::send_packet(T *buf)
+{
+	if (nullptr == buf) { return false; }
+	if (MAX_BUF_SIZE < buf[0]) {
+		if (true == m_b_debug_mode) { printf("Send Packet data size was over than Max Packet Size\n"); }
+		return false;
+	}
+
+	memcpy(&m_buf.buf_send[0], buf, buf[0]);
+
+	m_buf.wsabuf_send.len = m_buf.buf_send[0];
+	DWORD ioByteSize;
+	m_retval = WSASend(m_sock, &m_buf.wsabuf_send, 1, &ioByteSize, 0, NULL, NULL);
+	if (SOCKET_ERROR == m_retval) {
+		// 비동기 소켓이라 그냥 리턴, 검사 해주어야 함
+		int err_no = WSAGetLastError();
+		if (err_no != WSAEWOULDBLOCK) {
+			err_quit(L"sendPacket()", err_no);
+		}
+	}
+
+	return true;
+}

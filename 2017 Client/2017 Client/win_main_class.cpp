@@ -98,6 +98,7 @@ LRESULT CALLBACK win_main_class::m_WndProc(HWND hWnd, UINT message, WPARAM wPara
 		cs_packet_move packet;
 		packet.input_key = me->m_player.key_input(wParam);
 		me->m_network.send_packet(packet.size, packet.type, &packet);
+		//me->m_network.send_packet(&packet);
 		break;
 	}
 	case WM_CREATE: {

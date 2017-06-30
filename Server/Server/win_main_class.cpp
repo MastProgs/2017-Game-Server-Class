@@ -71,13 +71,13 @@ LRESULT CALLBACK win_main_class::m_WndProc(HWND hWnd, UINT message, WPARAM wPara
 
 		// txt
 		SetBkMode(me->m_hdc, TRANSPARENT);
-		TextOut(me->m_hdc, 20, 60, L"Source = github . com / Uzchowall / gameserverclass", 51);
+		TextOut(me->m_hdc, 20, 60, L"Source = github . com / MastProgs / gameserverclass", 51);
 		TextOut(me->m_hdc, 20, 80, L"IP Address = ", 13);
 		//CreateWindowEx(NULL, L"EDIT", NULL, WS_VISIBLE | WS_CHILD | WS_BORDER, 20, 100, 150, 20, hWnd, NULL, me->m_hInst, NULL);
 		TextOutA(me->m_hdc, 105, 80, me->m_ip, strlen(me->m_ip));
-		TextOut(me->m_hdc, 20, 225, L"Last Modified = 2017 - 03 - 23", 30);
-		TextOut(me->m_hdc, 20, 245, L"blog = khjkhj2804 . blog . me", 29);
-		TextOut(me->m_hdc, 20, 265, L"E-mail = khjkhj2804 @ naver . com", 33);
+		//TextOut(me->m_hdc, 20, 225, L"Last Modified = 2017 - 03 - 23", 30);
+		//TextOut(me->m_hdc, 20, 245, L"blog = khjkhj2804 . blog . me", 29);
+		//TextOut(me->m_hdc, 20, 265, L"E-mail = khjkhj2804 @ naver . com", 33);
 
 		EndPaint(hWnd, &me->m_ps);
 		break;
